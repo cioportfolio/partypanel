@@ -1,13 +1,14 @@
 #ifndef __SETTINGS__
 #define __SETTINGS__
 
-#define BRIGHTNESS 32
+#define BRIGHTNESS 64
 #define STRIPS 8
 
 #define LED_PIN1 23
 #define LED_PIN2 19
 #define LED_PIN3 18
-#define LED_PIN4 5
+//#define LED_PIN4 5
+#define LED_PIN4 22
 #define LED_PIN5 0
 #define LED_PIN6 25
 #define LED_PIN7 26

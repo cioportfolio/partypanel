@@ -2,6 +2,7 @@
 #include "displayData.h"
 
 uint8_t hue=random8();
+uint16_t EPM = 120;
 
 void sweep(boolean beat)
 {
@@ -11,8 +12,8 @@ void sweep(boolean beat)
   //da = 65536/((60*1000/BPM)/(1000/UPDATES_PER_SECOND))
   //   = 65536/(60*1000/BPM/1000*UPS)
   //   = 65536/60*BPM/UPS
-  const uint16_t BPM = analOut.tempo>70?analOut.tempo:120;
-  const uint16_t da = (long)65536 * BPM / 120 / UPDATES_PER_SECOND;
+
+  const uint16_t da = (long)65536 * EPM / 120 / UPDATES_PER_SECOND;
   static uint16_t a = 0;
   static int8_t t = 0, r = 0, dir = 1;
   uint16_t x, y;
@@ -84,14 +85,13 @@ void weave16(boolean beat)
   uint16_t x2, y2;
   CRGB col = CHSV(hue,255,128);
   uint16_t lw = 384;
-  const uint16_t BPM = analOut.tempo>70?analOut.tempo:120;
 
   if (s == 0)
   {
     ax = random16();
     ay = random16();
     sx = random16(4 << 8, 16 << 8);
-    sy = (long)65536 * variant(BPM) / 120 / UPDATES_PER_SECOND;
+    sy = (long)65536 * EPM / 120 / UPDATES_PER_SECOND;
     x1 = (long)cos16(ax) * LAST_COL / 255 + MID_COL * 255;
     y1 = (long)sin16(ay) * LAST_ROW / 255 + MID_ROW * 255;
 
@@ -144,7 +144,7 @@ void spin(boolean beat)
 
   int16_t x[4], xc = MID_COL << 8;
   int16_t y[4], yc = MID_ROW << 8;
-  a += (long)65536 * BPM / 240 / UPDATES_PER_SECOND;
+  a += (long)65536 * EPM / 240 / UPDATES_PER_SECOND;
   int16_t z = sin16(a);
   float fadj = (65536.0 + z) / 65536;
   float badj = (65536.0 - z) / 65536;
@@ -238,11 +238,13 @@ void drawEffect(boolean beatnow)
 {
   static uint8_t effect=0;
   static uint16_t frameCount=0;
+  uint16_t BPM = analOut.tempo>70?analOut.tempo:120;
 
   frameCount++;
   if (frameCount > 400)
   {
     frameCount=0;
+    EPM=variant(BPM);
     effect++;
     if (effect > 5)
     {
