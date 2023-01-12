@@ -1,6 +1,10 @@
 #ifndef __COMMON__
 #define __COMMON__
 
+
+#define FASTLED_ESP32_I2S
+#include <FastLED.h>
+
 #include "settings.h"
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -9,7 +13,7 @@
 #include <ESPmDNS.h>
 
 #define MAX_COMMANDS 5
-enum action_t {screenBrightness, newStart, newAnalysis, modeDisco, modeWhite};
+enum action_t {screenBrightness, newStart, newAnalysis, modeEffects, modePalette};
 typedef struct {
   action_t action;
 /*  uint8_t x;

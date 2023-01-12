@@ -294,12 +294,12 @@ void wsHandler(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
       c = {screenBrightness, data[1]};
       xQueueSend(commandQ, &c, portMAX_DELAY);
       break;
-    case 'D':
-      c = {modeDisco, 0};
+    case 'P':
+      c = {modePalette, 0};
       xQueueSend(commandQ, &c, portMAX_DELAY);
       break;
-    case 'W':
-      c = {modeWhite, 0};
+    case 'E':
+      c = {modeEffects, 0};
       xQueueSend(commandQ, &c, portMAX_DELAY);
       break;
       /* case 'L':

@@ -1,3 +1,12 @@
+#ifndef __DISPDATA__
+#define __DISPDATA__
+
+
+#define MID_COL (kMatrixWidth >> 1)
+#define MID_ROW (kMatrixHeight >> 1)
+#define LAST_COL (kMatrixWidth - 1)
+#define LAST_ROW (kMatrixHeight - 1)
+
 uint8_t gamma8[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
@@ -16,4 +25,7 @@ uint8_t gamma8[] = {
     177, 180, 182, 184, 186, 189, 191, 193, 196, 198, 200, 203, 205, 208, 210, 213,
     215, 218, 220, 223, 225, 228, 231, 233, 236, 239, 241, 244, 247, 249, 252, 255};
 
-CRGB leds[NUM_LEDS];
+CRGB leds_plus_safety_pixel[NUM_LEDS + 1];
+CRGB *const leds(leds_plus_safety_pixel + 1);
+
+#endif

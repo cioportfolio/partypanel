@@ -1,0 +1,5 @@
+Use settimeout to automatically send brightness changes once the control has stopped moving
+Allow entry of lightserver web address
+Remove Tatums
+Try direct read of progress info
+Try direct read of analysis info (dropping anything not needed)

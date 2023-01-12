@@ -1,5 +1,4 @@
 #include "common.h"
-#include <FastLED.h>
 #include "displayData.h"
 
 TickType_t lastShow = xTaskGetTickCount();
@@ -28,19 +27,22 @@ void resetEvents()
   checkTatum();
 }
 
-void toggleLED()
+/* void toggleLED()
 {
   if (tog == 1)
   {
+//    Serial.print("LED ON");
     digitalWrite(LED_BUILTIN, HIGH);
     tog = 0;
   }
   else
   {
+//    Serial.print("LED OFF");
     digitalWrite(LED_BUILTIN, LOW);
     tog = 1;
   }
-}
+} */
+
 void Refresh()
 {
   const uint32_t delayTicks = 1000 / UPDATES_PER_SECOND / portTICK_PERIOD_MS;
@@ -115,12 +117,12 @@ void handle_controls()
       xQueueReceive(analysisQ, &analOut, portMAX_DELAY);
       resetEvents();
       break;
-    case modeDisco:
-      Serial.println("Disco mode");
+    case modePalette:
+      Serial.println("Palette mode");
       dispMode = 0;
       break;
-    case modeWhite:
-      Serial.println("Static white mode");
+    case modeEffects:
+      Serial.println("Effects mode");
       dispMode = 1;
       break;      
     default:
@@ -199,11 +201,19 @@ void displayTask(void *params)
 
   Serial.print("Display task on core ");
   Serial.println(xPortGetCoreID());
-  toggleLED();
+//  toggleLED();
 
   vTaskDelay(3000 / portTICK_PERIOD_MS); // power-up safety delay
 
-  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN1, COLOR_ORDER>(leds, 0, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN2, COLOR_ORDER>(leds, NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN3, COLOR_ORDER>(leds, 2 * NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN4, COLOR_ORDER>(leds, 3 * NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN5, COLOR_ORDER>(leds, 4 * NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN6, COLOR_ORDER>(leds, 5 * NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN7, COLOR_ORDER>(leds, 6 * NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, LED_PIN8, COLOR_ORDER>(leds, 7 * NUM_LEDS / STRIPS, NUM_LEDS / STRIPS).setCorrection(TypicalLEDStrip);
+
   currentPalette = RainbowColors_p;
   currentBlending = LINEARBLEND;
   for (;;)
@@ -226,7 +236,7 @@ void displayTask(void *params)
     //      FastLED.setBrightness(  scale8(sensorValue,BRIGHTNESS) );
     handle_controls();
     genDisplay();
-    Refresh();
+
     //    }
   }
 }
@@ -244,12 +254,12 @@ void genDisplay()
   }
   else
   {
-    fill_solid(leds, NUM_LEDS, CRGB(255,255,255));
+    drawEffect(bt);
   }
-  if (tt)
+/*  if (tt)
   {
     toggleLED();
-  }
+  }*/
 }
 
 void FillLEDsFromPaletteColors(boolean barNow, boolean beatNow, boolean tatumNow)
@@ -287,26 +297,35 @@ void FillLEDsFromPaletteColors(boolean barNow, boolean beatNow, boolean tatumNow
     uint8_t colOffset = colorIndex + tightness * pos * dir;
     leds[i] = ColorFromPalette(currentPalette, colOffset, beatNow?255:128, currentBlending);
   }
+  Refresh();
 }
 
-uint8_t idx2Eye(uint8_t i)
+uint8_t idx2Eye(uint16_t i)
 {
-  return i >= 12;
+  return i >= kMatrixHeight;
 }
 
-uint8_t idx2Y(uint8_t i)
+uint8_t idx2Y(uint16_t i)
 {
-  if (i < 7)
+  if (i <= kMatrixHeight / 2)
     return i;
-  if (i < 13)
-    return 12 - i;
-  if (i < 19)
-    return i - 12;
-  return 24 - i;
+  if (i <= kMatrixHeight)
+    return kMatrixHeight - i;
+  if (i <= kMatrixHeight + kMatrixHeight / 2)
+    return i - kMatrixHeight;
+  return 2 * kMatrixHeight - i;
 }
 
-uint8_t idx2X(uint8_t i)
+uint8_t idx2X(uint16_t i)
 {
+  if (kMatrixWidth == 1)
+  {
+    if (i <= kMatrixHeight / 4)
+      return i + kMatrixHeight / 4;
+    if (i <= kMatrixHeight / 4 + kMatrixHeight / 2)
+      return kMatrixHeight / 4 + kMatrixHeight / 2 - i;
+    return i - kMatrixHeight / 4 - kMatrixHeight / 2;
+  }
   if (i < 4)
     return i + 10;
   if (i < 10)
@@ -320,13 +339,17 @@ uint8_t idx2X(uint8_t i)
   return i - 21;
 }
 
-uint8_t idx2Clock(uint8_t i)
+uint8_t idx2Clock(uint16_t i)
 {
-  return i - 12 * idx2Eye(i);
+  return i - kMatrixHeight * idx2Eye(i);
 }
 
-uint8_t idx2Sequence(uint8_t i)
+uint8_t idx2Sequence(uint16_t i)
 {
+  if (kMatrixWidth == 1)
+  {
+    return i;
+  }
   if (i < 10)
     return i;
   if (i < 12)
@@ -336,8 +359,12 @@ uint8_t idx2Sequence(uint8_t i)
   return i - 6;
 }
 
-uint8_t idx2Fig8(uint8_t i)
+uint8_t idx2Fig8(uint16_t i)
 {
+  if (kMatrixWidth==1)
+  {
+    return i;
+  }
   if (i < 10)
     return i;
   if (i < 12)
