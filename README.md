@@ -6,4 +6,4 @@ Update settings.h with your local URL if you are using the lightserver to get Sp
 
 Update settings.h as required e.g. led pins, matrix dimensions
 
-When running the ESP32 will attempt to connect to wifi and serve a simple control page (brightness control and plain white/disco switch)
+When running the ESP32 will attempt to connect to wifi and serve a simple control page (brightness control and effects switch)
